@@ -11,7 +11,14 @@ PSO2NGSで生成されたログファイルを解析するGUIソフトウェア�
 Pythonインタプリタ上で動作するものと、Windows10 64bit上で動作するexe版があります。
 
 1. settings.iniのLogFolderDirを編集し、NGSのログがあるフォルダへ変更する。Windows標準のドキュメントのフォルダをCドライブから変更していない場合は変更する必要なし。
+
 2. Python版あるいはexe版を起動。
+    1. Python版はコマンドプロンプトにて
+       ```
+       python LogAnalyzerGUI.py
+       ```
+    2. GUI版はLogAnalyzerGUI.exeをダブルクリックで実行できます。
+
 
 # 環境
   * Python版
