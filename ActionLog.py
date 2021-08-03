@@ -26,9 +26,7 @@ class PickUpLog(ActionLogObject):
         elif "Meseta" in name: # メセタ入手ログ
             self.type = self.MESETA
             self.name = name
-            accquire = int(re.search(r"Meseta\((\d+)\)", name).group(1)) # 入手メセタ
-            current = int(re.search(r"CurrentMeseta\((\d+)\)", info).group(1)) # 現在のメセタ
-            self.info = [accquire, current]
+            self.info = info
         else: # アイテム入手ログ
             self.type = self.ITEM
             self.name = name
@@ -36,13 +34,13 @@ class PickUpLog(ActionLogObject):
 
     def getCurrentMeseta(self) -> int:
         if self.type == self.MESETA:
-            return self.info[1]
+            return int(re.search(r"CurrentMeseta\((\d+)\)", self.info).group(1)) # 現在のメセタ
         else:
             raise TypeError("getCurrentMeseta() is supported for only Meseta Log.")
 
     def getNum(self) -> int:
         if self.type == self.MESETA:
-            return self.info[0]
+            return int(re.search(r"Meseta\((\d+)\)", self.name).group(1))
         else:
             if re.match(r"Num\((\d+)\)", self.info):
                 return int(re.search(r"Num\((\d+)\)", self.info).group(1))
@@ -74,3 +72,6 @@ class DiscardExchangeLog(ActionLogObject):
 
     def getCurrentMeseta(self):
         return self.info[1]
+
+    def __str__(self) -> str:
+        return "[売却で取得]" + super().__str__()
