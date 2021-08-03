@@ -1,3 +1,4 @@
+from LogAnalyzerGUI import CAPSULE
 from abc import ABCMeta, abstractmethod
 import datetime
 import re
@@ -14,13 +15,13 @@ class ActionLogObject(metaclass=ABCMeta):
 
 class PickUpLog(ActionLogObject):
     ITEM = 0
-    CUPSLE = 1
+    CAPSULE = 1
     MESETA = 2
 
     def __init__(self, date, name, info):
         self.date = datetime.datetime.strptime(date, LogDateFormat)
         if "C/" in name: # カプセル入手ログ
-            self.type = self.CUPSLE
+            self.type = self.CAPSULE
             self.name = name
             self.info = info
         elif "Meseta" in name: # メセタ入手ログ

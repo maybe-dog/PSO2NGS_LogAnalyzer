@@ -23,7 +23,7 @@ userLogFolderDir = DefaultLogFolderDir if iniLogFolderDir == "Default" else iniL
 dateFormat = "%Y-%m-%d %H:%M"
 
 ALL = 0
-CUPSLE = 1
+CAPSULE = 1
 
 
 """ ボタン押したときにする必要あり
@@ -56,9 +56,9 @@ def updateLogTree(treeView: ttk.Treeview, state):
         lambda alo:startTime <= alo.date and alo.date <= endTime, ActionLogObjectList))
     if state == ALL: # 全て表示
         pass
-    elif state == CUPSLE:
+    elif state == CAPSULE:
         filteredActionLogObjectList = list(filter(lambda alo: isinstance(alo, PickUpLog), filteredActionLogObjectList)) # PickUpLogのみでフィルタリング
-        filteredActionLogObjectList = list(filter(lambda alo: alo.type == PickUpLog.CUPSLE, filteredActionLogObjectList)) # カプセルのログのみでフィルタリング
+        filteredActionLogObjectList = list(filter(lambda alo: alo.type == PickUpLog.CAPSULE, filteredActionLogObjectList)) # カプセルのログのみでフィルタリング
     for alo in filteredActionLogObjectList:
             values = (alo.name, alo.info, alo.date.strftime(dateFormat))
             treeView.insert(parent="", index="end", values=values)
@@ -70,10 +70,10 @@ def updateStatTree(treeView: ttk.Treeview, state):
         lambda alo:startTime <= alo.date and alo.date <= endTime, ActionLogObjectList))
     if state == ALL:
         pass # TODO
-    elif state == CUPSLE:
+    elif state == CAPSULE:
         capsuleDic = dict()
         for alo in filteredActionLogObjectList:
-            if alo.type == PickUpLog.CUPSLE:
+            if alo.type == PickUpLog.CAPSULE:
                 num = alo.getNum() # 入手個数
                 if alo.name in capsuleDic:
                     capsuleDic[alo.name] = capsuleDic[alo.name] + num
@@ -285,7 +285,7 @@ def main():
     radioVar = tk.IntVar(value=0)
     radioAll = tk.Radiobutton(radioFrame, value=ALL, variable=radioVar, text="全て", 
     command=lambda: updateCallBack(logTreeView, statTreeView, radioVar.get()))
-    radioCupsle = tk.Radiobutton(radioFrame, value=CUPSLE, variable=radioVar, text="カプセルのみ",
+    radioCupsle = tk.Radiobutton(radioFrame, value=CAPSULE, variable=radioVar, text="カプセルのみ",
     command=lambda: updateCallBack(logTreeView, statTreeView, radioVar.get()))
 
     parFrame2 = tk.Frame(root)
