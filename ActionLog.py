@@ -1,4 +1,3 @@
-from LogAnalyzerGUI import CAPSULE
 from abc import ABCMeta, abstractmethod
 import datetime
 import re

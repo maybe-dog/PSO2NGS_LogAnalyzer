@@ -72,13 +72,14 @@ def updateStatTree(treeView: ttk.Treeview, state):
         pass # TODO
     elif state == CAPSULE:
         capsuleDic = dict()
+        filteredActionLogObjectList = list(filter(lambda alo: isinstance(alo, PickUpLog), filteredActionLogObjectList)) # PickUpLogのみでフィルタリング
+        filteredActionLogObjectList = list(filter(lambda alo: alo.type == PickUpLog.CAPSULE, filteredActionLogObjectList)) # カプセルのログのみでフィルタリング
         for alo in filteredActionLogObjectList:
-            if alo.type == PickUpLog.CAPSULE:
-                num = alo.getNum() # 入手個数
-                if alo.name in capsuleDic:
-                    capsuleDic[alo.name] = capsuleDic[alo.name] + num
-                else:
-                    capsuleDic[alo.name] = num
+            num = alo.getNum() # 入手個数
+            if alo.name in capsuleDic:
+                capsuleDic[alo.name] = capsuleDic[alo.name] + num
+            else:
+                capsuleDic[alo.name] = num
         sortedCapsuleList = sorted(list(capsuleDic.items()), key=lambda item: item[0])
         for name, quantity in sortedCapsuleList:
             treeView.insert(parent="", index="end", values=(name, quantity))
