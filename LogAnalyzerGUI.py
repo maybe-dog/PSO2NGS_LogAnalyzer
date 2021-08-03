@@ -1,4 +1,4 @@
-from ActionLog import ActionLogObject
+from ActionLog import ActionLogObject, PickUpLog
 from ActionLogParser import parseActionLogs
 import tkinter as tk
 from tkinter import ttk
@@ -57,7 +57,8 @@ def updateLogTree(treeView: ttk.Treeview, state):
     if state == ALL: # 全て表示
         pass
     elif state == CUPSLE:
-        filteredActionLogObjectList = list(filter(lambda alo: "C/" in alo.name, filteredActionLogObjectList)) # カプセルのみでフィルタリング
+        filteredActionLogObjectList = list(filter(lambda alo: isinstance(alo, PickUpLog), filteredActionLogObjectList)) # PickUpLogのみでフィルタリング
+        filteredActionLogObjectList = list(filter(lambda alo: alo.type == PickUpLog.CUPSLE, filteredActionLogObjectList)) # カプセルのログのみでフィルタリング
     for alo in filteredActionLogObjectList:
             values = (alo.name, alo.info, alo.date.strftime(dateFormat))
             treeView.insert(parent="", index="end", values=values)
@@ -72,8 +73,8 @@ def updateStatTree(treeView: ttk.Treeview, state):
     elif state == CUPSLE:
         capsuleDic = dict()
         for alo in filteredActionLogObjectList:
-            if "C/" in alo.name:
-                num = int(re.search(r"Num\((\d)\)", alo.info).group(1)) # 入手個数
+            if alo.type == PickUpLog.CUPSLE:
+                num = alo.getNum() # 入手個数
                 if alo.name in capsuleDic:
                     capsuleDic[alo.name] = capsuleDic[alo.name] + num
                 else:
