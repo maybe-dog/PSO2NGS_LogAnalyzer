@@ -63,15 +63,13 @@ class DiscardExchangeLog(ActionLogObject):
     def __init__(self, date, name, info):
         self.date = datetime.datetime.strptime(date, LogDateFormat)
         self.name = name
-        accquire = int(re.search(r"Meseta\((\d+)\)", name).group(1)) # 入手メセタ
-        current = int(re.search(r"CurrentMeseta\((\d+)\)", info).group(1)) # 現在のメセタ
-        self.info = [accquire, current]
+        self.info = info
 
     def getNum(self):
-        return self.info[0]
+        return int(re.search(r"Meseta\((\d+)\)", self.name).group(1))
 
     def getCurrentMeseta(self):
-        return self.info[1]
+        return int(re.search(r"CurrentMeseta\((\d+)\)", self.info).group(1))
 
     def __str__(self) -> str:
         return "[売却で取得]" + super().__str__()
