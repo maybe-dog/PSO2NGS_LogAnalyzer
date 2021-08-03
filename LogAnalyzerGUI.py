@@ -1,3 +1,5 @@
+from ActionLog import ActionLogObject
+from ActionLogParser import parseActionLogs
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -31,77 +33,51 @@ sortedActionFiles = sorted(actionFiles, key=os.path.getmtime) # 更新日時順�
 """
 
 # Global Variables
-PUObjectList = [] # 読み込んだ全ての取得物のリスト
+ActionLogObjectList = [] # 読み込んだ全ての取得物のリスト
 startTime = None
 endTime = None
 
 # Definitions
-class PUObject:
-    def __init__(self, date, name, info):
-        self.date = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
-        self.name = name
-        self.info = info
-
-    def __str__(self) -> str:
-        return "アイテム名:{}, 情報:{}, 日付:{}".format(self.date, self.info, self.date)
-
-def lineToPUObject(line):
-    puList = re.split(r"\t+", line)
-    # print(puList)
-    date = puList[0]
-    name = puList[5]
-    info = puList[6] if len(puList) >= 7 else None
-    return PUObject(date, name, info)
-
-def loadActionFiles(num):
+def loadActionFiles(num) -> list[ActionLogObject]:
     if num < 1:
         messagebox.showwarning("Error", "1以上の整数を入力してください")
         raise Exception("loadActionFiles, 1未満の数字が入力されました")
-    global PUObjectList
+    global ActionLogObjectList
     logFiles = glob.glob(userLogFolderDir + r"\*")
     actionFiles = list(filter(lambda x: "ActionLog" in x, logFiles)) # ActionLogのみを抽出
     sortedActionFiles = sorted(actionFiles, key=os.path.getmtime) # 更新日時順にソート
     loadNum = min(num, len(sortedActionFiles)) # 読み込む数
-    puObjectList = []
-
-    for actionFile in sortedActionFiles[-loadNum:]: # 最新のnum個のlogを読む
-        with open(actionFile, "r", encoding="utf-16") as f:
-            lines = f.read().splitlines()
-            pickUpLines = list(filter(lambda x: "Pickup" in x, lines))
-            puObjectList += list(map(lineToPUObject, pickUpLines))
     
-    puObjectList.sort(key=lambda po:po.date) # 取得日時順にソート
-    PUObjectList = puObjectList
-    return
+    return parseActionLogs(sortedActionFiles)
 
 def updateLogTree(treeView: ttk.Treeview, state):
     treeView.delete(*treeView.get_children()) # 要素を全部消す
-    filteredPUObjectList = list(filter( # 指定した範囲時間でフィルタリング
-        lambda pu:startTime <= pu.date and pu.date <= endTime, PUObjectList))
+    filteredActionLogObjectList = list(filter( # 指定した範囲時間でフィルタリング
+        lambda alo:startTime <= alo.date and alo.date <= endTime, ActionLogObjectList))
     if state == ALL: # 全て表示
         pass
     elif state == CUPSLE:
-        filteredPUObjectList = list(filter(lambda pu: "C/" in pu.name, filteredPUObjectList)) # カプセルのみでフィルタリング
-    for pu in filteredPUObjectList:
-            values = (pu.name, pu.info, pu.date.strftime(dateFormat))
+        filteredActionLogObjectList = list(filter(lambda alo: "C/" in alo.name, filteredActionLogObjectList)) # カプセルのみでフィルタリング
+    for alo in filteredActionLogObjectList:
+            values = (alo.name, alo.info, alo.date.strftime(dateFormat))
             treeView.insert(parent="", index="end", values=values)
     return
 
 def updateStatTree(treeView: ttk.Treeview, state):
     treeView.delete(*treeView.get_children()) # 要素を全部消す
-    filteredPUObjectList = list(filter(
-        lambda pu:startTime <= pu.date and pu.date <= endTime, PUObjectList))
+    filteredActionLogObjectList = list(filter(
+        lambda alo:startTime <= alo.date and alo.date <= endTime, ActionLogObjectList))
     if state == ALL:
         pass # TODO
     elif state == CUPSLE:
         capsuleDic = dict()
-        for pu in filteredPUObjectList:
-            if "C/" in pu.name:
-                num = int(re.search(r"Num\((\d)\)", pu.info).group(1)) # 入手個数
-                if pu.name in capsuleDic:
-                    capsuleDic[pu.name] = capsuleDic[pu.name] + num
+        for alo in filteredActionLogObjectList:
+            if "C/" in alo.name:
+                num = int(re.search(r"Num\((\d)\)", alo.info).group(1)) # 入手個数
+                if alo.name in capsuleDic:
+                    capsuleDic[alo.name] = capsuleDic[alo.name] + num
                 else:
-                    capsuleDic[pu.name] = num
+                    capsuleDic[alo.name] = num
         sortedCapsuleList = sorted(list(capsuleDic.items()), key=lambda item: item[0])
         for name, quantity in sortedCapsuleList:
             treeView.insert(parent="", index="end", values=(name, quantity))
@@ -112,8 +88,9 @@ def updateCallBack(logTreeView, statTreeView, state):
     updateStatTree(statTreeView, state)
 
 def startUp(logTreeView, statTreeView, state):
+    global ActionLogObjectList
     try:
-        loadActionFiles(10)
+        ActionLogObjectList = loadActionFiles(10)
         updateCallBack(logTreeView, statTreeView, state)
     except Exception as e:
         print(e)
@@ -132,8 +109,9 @@ def main():
     readEntry1 = tk.Entry(readFrame, textvariable=readNumBar, width=4)
     
     def readButtonCallBack(num):
+        global ActionLogObjectList
         try:
-            loadActionFiles(num)
+            ActionLogObjectList = loadActionFiles(num)
             updateLogTree(logTreeView, radioVar.get())
             updateStatTree(statTreeView, radioVar.get())
         except Exception as e:
